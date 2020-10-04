@@ -46,7 +46,7 @@ func TestPassedArguments(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.CaseName, func(t *testing.T) {
 			params := &Params{
-				Path: path.Join(projectPath, "/bin/test-app-args"),
+				Path: path.Join(projectPath, "bin", "test-app-args"),
 				Args: tc.Arguments,
 			}
 			cmd, err := New(params)
@@ -74,7 +74,7 @@ func TestSigkill(t *testing.T) {
 	}
 
 	t.Run("sigterm", func(t *testing.T) {
-		cmd, err := New(&Params{Path: path.Join(projectPath, "/bin/test-app-kill")})
+		cmd, err := New(&Params{Path: path.Join(projectPath, "bin", "test-app-kill")})
 		require.Nil(t, err)
 
 		require.NoError(t, cmd.Sigkill())
@@ -88,7 +88,7 @@ func TestSigkill(t *testing.T) {
 	})
 
 	t.Run("timeout", func(t *testing.T) {
-		cmd, err := New(&Params{Path: path.Join(projectPath, "/bin/test-app-kill")})
+		cmd, err := New(&Params{Path: path.Join(projectPath, "bin", "test-app-kill")})
 		require.Nil(t, err)
 
 		waitError := cmd.Wait()
