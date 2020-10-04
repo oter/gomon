@@ -28,7 +28,7 @@ DEFAULT_COLOR = "\033[m"
 
 .PHONY: all help clean test lint fmt build
 
-all: clean fmt build_test_apps build lint test
+all: clean fmt lint build_test_apps build test
 
 help:
 	@echo 'Usage: make <TARGETS> ... <OPTIONS>'
@@ -71,6 +71,7 @@ build_test_apps:
 	@echo -e [$(GREEN_COLOR)build test apps$(DEFAULT_COLOR)]
 	@mkdir -p ./bin
 	@$(GOBUILD) -o $(GOBIN)/test-app-args ./cmd/test-app-args/
+	@$(GOBUILD) -o $(GOBIN)/test-app-kill ./cmd/test-app-kill/
 
 generate:
 	@mkdir -p ./bin
