@@ -28,7 +28,7 @@ DEFAULT_COLOR = "\033[m"
 
 .PHONY: all help clean test lint fmt build
 
-all: clean fmt lint build_test_apps build test
+all: clean fmt lint build test
 
 help:
 	@echo 'Usage: make <TARGETS> ... <OPTIONS>'
@@ -49,7 +49,7 @@ clean:
 	@$(GOCLEAN)
 	@rm -rf $(GOBIN)
 
-test: build_test_apps
+test: build
 	@echo -e [$(GREEN_COLOR)test$(DEFAULT_COLOR)]
 	@$(GOTEST) -v -race -count=1 ./...
 
@@ -66,13 +66,10 @@ build:
 	@echo -e [$(GREEN_COLOR)build$(DEFAULT_COLOR)]
 	@mkdir -p ./bin
 	@$(GOBUILD) -o $(BINARY_PATH)
-
-build_test_apps:
-	@echo -e [$(GREEN_COLOR)build test apps$(DEFAULT_COLOR)]
-	@mkdir -p ./bin
 	@$(GOBUILD) -o $(GOBIN)/test-app-args ./cmd/test-app-args/
 	@$(GOBUILD) -o $(GOBIN)/test-app-kill ./cmd/test-app-kill/
 	@$(GOBUILD) -o $(GOBIN)/test-app-env ./cmd/test-app-env/
+	@$(GOBUILD) -o $(GOBIN)/test-app-relay-sigs ./cmd/test-app-relay-sigs/
 
 generate:
 	@mkdir -p ./bin
@@ -81,3 +78,7 @@ generate:
 	@echo -e $(PURPLE_COLOR)[mockery built]$(DEFAULT_COLOR)
 	@echo -e [$(GREEN_COLOR)generate$(DEFAULT_COLOR)]
 	@$(GOGENERATE) $(ALL_PKGS)
+
+all_in_docker:
+	@echo -e [$(GREEN_COLOR)all in docker$(DEFAULT_COLOR)]
+	@docker run --rm -it $(docker build .)

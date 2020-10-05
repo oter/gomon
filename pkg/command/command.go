@@ -60,7 +60,10 @@ func (c *Command) RelaySignals(sigs chan os.Signal) {
 
 		for {
 			select {
-			case s := <-sigs:
+			case s, ok := <-sigs:
+				if !ok {
+					return
+				}
 				if err := c.cmd.Process.Signal(s); err != nil {
 					log.Warnln("signalling failed:", err.Error())
 				}

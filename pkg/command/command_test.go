@@ -1,9 +1,13 @@
 package command
 
 import (
+	"fmt"
 	"os"
 	"path"
+	"sync"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +18,7 @@ import (
 func TestPassedArguments(t *testing.T) {
 	projectPath := os.Getenv("PROJECT_ROOT")
 	if projectPath == "" {
-		t.Fatal("PROJECT_PATH env var expected to be set")
+		t.Fatal("PROJECT_ROOT env var expected to be set")
 	}
 
 	testCases := []struct {
@@ -70,12 +74,14 @@ func TestPassedArguments(t *testing.T) {
 func TestSigkill(t *testing.T) {
 	projectPath := os.Getenv("PROJECT_ROOT")
 	if projectPath == "" {
-		t.Fatal("PROJECT_PATH env var expected to be set")
+		t.Fatal("PROJECT_ROOT env var expected to be set")
 	}
 
 	t.Run("sigterm", func(t *testing.T) {
 		cmd, err := New(&Params{Path: path.Join(projectPath, "bin", "test-app-kill")})
 		require.Nil(t, err)
+
+		time.Sleep(2*time.Second) // ensure Notify() called in the child process
 
 		require.NoError(t, cmd.Sigkill())
 
@@ -84,7 +90,7 @@ func TestSigkill(t *testing.T) {
 
 		exitCode, ok := cmd.ExitCode()
 		require.True(t, ok)
-		require.Equal(t, -1, exitCode) // -1 means the child process was successfully killed
+		require.Equal(t, 1, exitCode)
 	})
 
 	t.Run("timeout", func(t *testing.T) {
@@ -104,7 +110,7 @@ func TestSigkill(t *testing.T) {
 func TestPassEnv(t *testing.T) {
 	projectPath := os.Getenv("PROJECT_ROOT")
 	if projectPath == "" {
-		t.Fatal("PROJECT_PATH env var expected to be set")
+		t.Fatal("PROJECT_ROOT env var expected to be set")
 	}
 
 	t.Run("FOOBAR=bar", func(t *testing.T) {
@@ -132,5 +138,62 @@ func TestPassEnv(t *testing.T) {
 		exitCode, ok := cmd.ExitCode()
 		require.True(t, ok)
 		require.Equal(t, 1, exitCode)
+	})
+}
+
+// Test expects test-app-relay-sigs binary to be built and located in $PROJECT_ROOT/bin folder.
+func TestRelaySignals(t *testing.T) {
+	projectPath := os.Getenv("PROJECT_ROOT")
+	if projectPath == "" {
+		t.Fatal("PROJECT_ROOT env var expected to be set")
+	}
+
+	t.Run("timeout", func(t *testing.T) {
+		cmd, err := New(&Params{
+			Path:    path.Join(projectPath, "bin", "test-app-relay-sigs"),
+		})
+		require.Nil(t, err)
+
+		waitError := cmd.Wait()
+		require.Error(t, waitError)
+
+		exitCode, ok := cmd.ExitCode()
+		require.True(t, ok)
+		require.Equal(t, 1, exitCode)
+	})
+
+	t.Run("signals", func(t *testing.T) {
+		cmd, err := New(&Params{Path: path.Join(projectPath, "bin", "test-app-relay-sigs")})
+		require.Nil(t, err)
+
+		time.Sleep(2*time.Second) // ensure Notify() called in the child process
+
+		var wg sync.WaitGroup
+		generateSignals := func(sig os.Signal, count int) chan os.Signal {
+			wg.Add(1)
+			ch := make(chan os.Signal)
+			go func(count int) {
+				defer func() {
+					close(ch)
+					wg.Done()
+				}()
+				for i := 0; i < count; i++ {
+					ch <- sig
+					fmt.Println("sent")
+				}
+			}(count)
+
+			return ch
+		}
+
+		cmd.RelaySignals(generateSignals(syscall.SIGUSR1, 1))
+		wg.Wait()
+
+		waitError := cmd.Wait()
+		require.NoError(t, waitError)
+
+		exitCode, ok := cmd.ExitCode()
+		require.True(t, ok)
+		require.Equal(t, 0, exitCode)
 	})
 }
