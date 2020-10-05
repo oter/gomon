@@ -31,4 +31,4 @@ Application monitoring tool
 | X | Continuous integration configuration |
 | X | Integration tests | 
 | - | Command (package main) that demonstrates the usage |
-| X | Unit tests |
+| - | Unit tests |

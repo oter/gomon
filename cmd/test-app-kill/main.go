@@ -22,7 +22,7 @@ func main() {
 		case syscall.SIGINT:
 			exitCode = 2
 		}
-	case <-time.After(2*time.Second):
+	case <-time.After(5*time.Second):
 		exitCode = 128
 	}
 

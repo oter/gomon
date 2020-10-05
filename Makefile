@@ -26,7 +26,7 @@ GREEN_COLOR   = "\033[0;32m"
 PURPLE_COLOR  = "\033[0;35m"
 DEFAULT_COLOR = "\033[m"
 
-.PHONY: all help clean test lint fmt build
+.PHONY: all help clean test lint fmt build all_in_docker
 
 all: clean fmt lint build test
 
@@ -81,4 +81,4 @@ generate:
 
 all_in_docker:
 	@echo -e [$(GREEN_COLOR)all in docker$(DEFAULT_COLOR)]
-	@docker run --rm -it $(docker build .)
+	docker build . | tee /dev/tty | tail -n1 | cut -d' ' -f3 | xargs -I{} docker run --rm {}

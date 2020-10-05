@@ -5,6 +5,8 @@
 *.so
 *.dylib
 
+t.txt
+
 # Ignore build artifacts
 bin/
 

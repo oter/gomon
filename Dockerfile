@@ -11,4 +11,4 @@ COPY ./pkg ./pkg
 
 RUN go mod download
 
-RUN make all
+ENTRYPOINT ["make", "all"]
