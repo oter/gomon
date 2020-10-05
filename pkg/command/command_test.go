@@ -99,3 +99,38 @@ func TestSigkill(t *testing.T) {
 		require.Equal(t, 128, exitCode)
 	})
 }
+
+// Test expects test-app-env binary to be built and located in $PROJECT_ROOT/bin folder.
+func TestPassEnv(t *testing.T) {
+	projectPath := os.Getenv("PROJECT_ROOT")
+	if projectPath == "" {
+		t.Fatal("PROJECT_PATH env var expected to be set")
+	}
+
+	t.Run("FOOBAR=bar", func(t *testing.T) {
+		cmd, err := New(&Params{
+			Path:    path.Join(projectPath, "bin", "test-app-env"),
+			EnvVars: []string{"FOOBAR=bar"},
+		})
+		require.Nil(t, err)
+
+		waitError := cmd.Wait()
+		require.NoError(t, waitError)
+
+		exitCode, ok := cmd.ExitCode()
+		require.True(t, ok)
+		require.Equal(t, 0, exitCode)
+	})
+
+	t.Run("expected env var unset", func(t *testing.T) {
+		cmd, err := New(&Params{Path: path.Join(projectPath, "bin", "test-app-env")})
+		require.Nil(t, err)
+
+		waitError := cmd.Wait()
+		require.Error(t, waitError)
+
+		exitCode, ok := cmd.ExitCode()
+		require.True(t, ok)
+		require.Equal(t, 1, exitCode)
+	})
+}

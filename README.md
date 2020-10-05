@@ -1,12 +1,16 @@
 # gomon
 Application monitoring tool
 
-## What it should:
+## Features
 **X** - Implemented and covered with tests;
 
 **\-** - Not implemented;
 
-**W** - Implemented, but not tested
+**W** - Implemented, but not tested;
+
+**P** - Partially;
+
+### What it should:
 
 | Status | Feature |
 |:------:|:--------|
@@ -17,13 +21,14 @@ Application monitoring tool
 | - | Read their stdout and stderr |
 | X | Compile and work on Linux and macOS |
 
-
-W ability to stop processes when main processes are SIGKILL'ed;
-* comments and documentation in code;
-* configurable backoff strategy for restarts;
-* README file;
-X continuous integration configuration;
-X integration tests;
-* command (package main) that demonstrates the usage;
-* unit tests.
-
+### Optional features
+| Status | Feature |
+|:------:|:--------|
+| W | Ability to stop processes when main processes are SIGKILL'ed |
+| P | Comments and documentation in code |
+| - | Configurable backoff strategy for restarts |
+| X | README file |
+| X | Continuous integration configuration |
+| X | Integration tests | 
+| - | Command (package main) that demonstrates the usage |
+| X | Unit tests |

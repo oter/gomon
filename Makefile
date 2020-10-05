@@ -72,6 +72,7 @@ build_test_apps:
 	@mkdir -p ./bin
 	@$(GOBUILD) -o $(GOBIN)/test-app-args ./cmd/test-app-args/
 	@$(GOBUILD) -o $(GOBIN)/test-app-kill ./cmd/test-app-kill/
+	@$(GOBUILD) -o $(GOBIN)/test-app-env ./cmd/test-app-env/
 
 generate:
 	@mkdir -p ./bin

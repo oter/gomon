@@ -33,6 +33,10 @@ type Params struct {
 
 func New(p *Params) (*Command, error) {
 	cmd := exec.Command(p.Path, p.Args...)
+	// setting pgid allows to kill the child process when the parent killed.
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+	cmd.Env = append(os.Environ(), p.EnvVars...)
 
 	if err := cmd.Start(); err != nil {
 		return nil, errors.WithStack(err)
@@ -73,7 +77,7 @@ func (c *Command) Sigkill() error {
 		return nil
 	}
 
-	if err := syscall.Kill(process.Pid, syscall.SIGTERM); err != nil {
+	if err := syscall.Kill(-process.Pid, syscall.SIGTERM); err != nil {
 		return errors.WithStack(err)
 	}
 
