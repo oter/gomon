@@ -7,5 +7,4 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - run: ls -lah
-      - run: docker build . --file Dockerfile
+      - run: docker build . --file Dockerfile | tee /dev/tty | tail -n1 | cut -d' ' -f3 | xargs -I{} docker run --rm {}
