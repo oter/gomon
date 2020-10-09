@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -81,7 +82,7 @@ func TestSigkill(t *testing.T) {
 		cmd, err := New(&Params{Path: path.Join(projectPath, "bin", "test-app-kill")})
 		require.Nil(t, err)
 
-		time.Sleep(2*time.Second) // ensure Notify() called in the child process
+		time.Sleep(2 * time.Second) // ensure Notify() called in the child process
 
 		require.NoError(t, cmd.Sigkill())
 
@@ -150,7 +151,7 @@ func TestRelaySignals(t *testing.T) {
 
 	t.Run("timeout", func(t *testing.T) {
 		cmd, err := New(&Params{
-			Path:    path.Join(projectPath, "bin", "test-app-relay-sigs"),
+			Path: path.Join(projectPath, "bin", "test-app-relay-sigs"),
 		})
 		require.Nil(t, err)
 
@@ -166,7 +167,7 @@ func TestRelaySignals(t *testing.T) {
 		cmd, err := New(&Params{Path: path.Join(projectPath, "bin", "test-app-relay-sigs")})
 		require.Nil(t, err)
 
-		time.Sleep(2*time.Second) // ensure Notify() called in the child process
+		time.Sleep(2 * time.Second) // ensure Notify() called in the child process
 
 		var wg sync.WaitGroup
 		generateSignals := func(sig os.Signal, count int) chan os.Signal {
@@ -196,4 +197,57 @@ func TestRelaySignals(t *testing.T) {
 		require.True(t, ok)
 		require.Equal(t, 0, exitCode)
 	})
+}
+
+// Test expects test-app-stdio binary to be built and located in $PROJECT_ROOT/bin folder.
+func TestStdio(t *testing.T) {
+	projectPath := os.Getenv("PROJECT_ROOT")
+	if projectPath == "" {
+		t.Fatal("PROJECT_ROOT env var expected to be set")
+	}
+
+	testCases := []struct {
+		CaseName string
+		Args     []string
+		Expected string
+	}{
+		{
+			CaseName: "stderr",
+			Args:     []string{"stderr"},
+			Expected: "hello from stderr",
+		},
+		{
+			CaseName: "stdout",
+			Args:     []string{"stdout"},
+			Expected: "hello from stdout",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.CaseName, func(t *testing.T) {
+			p := &Params{
+				Path: path.Join(projectPath, "bin", "test-app-stdio"),
+				Args: tc.Args,
+			}
+
+			var stdBuff bytes.Buffer
+			switch tc.CaseName {
+			case "stderr":
+				p.Stderr = &stdBuff
+			case "stdout":
+				p.Stdout = &stdBuff
+			}
+			cmd, err := New(p)
+			require.Nil(t, err)
+
+			waitError := cmd.Wait()
+			require.NoError(t, waitError)
+
+			exitCode, ok := cmd.ExitCode()
+			require.True(t, ok)
+			require.Equal(t, 0, exitCode)
+
+			require.Contains(t, stdBuff.String(), tc.Expected)
+		})
+	}
 }

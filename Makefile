@@ -70,6 +70,7 @@ build:
 	@$(GOBUILD) -o $(GOBIN)/test-app-kill ./cmd/test-app-kill/
 	@$(GOBUILD) -o $(GOBIN)/test-app-env ./cmd/test-app-env/
 	@$(GOBUILD) -o $(GOBIN)/test-app-relay-sigs ./cmd/test-app-relay-sigs/
+	@$(GOBUILD) -o $(GOBIN)/test-app-stdio ./cmd/test-app-stdio/
 
 generate:
 	@mkdir -p ./bin

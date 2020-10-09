@@ -1,8 +1,8 @@
 package command
 
 import (
-	"github.com/prometheus/common/log"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"sync"
@@ -38,6 +38,9 @@ func New(p *Params) (*Command, error) {
 
 	cmd.Env = append(os.Environ(), p.EnvVars...)
 
+	cmd.Stderr = p.Stderr
+	cmd.Stdout = p.Stdout
+
 	if err := cmd.Start(); err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -65,7 +68,7 @@ func (c *Command) RelaySignals(sigs chan os.Signal) {
 					return
 				}
 				if err := c.cmd.Process.Signal(s); err != nil {
-					log.Warnln("signalling failed:", err.Error())
+					log.Printf("signalling failed: %s", err.Error())
 				}
 			case <-c.waitDone:
 				return

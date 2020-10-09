@@ -18,7 +18,7 @@ Application monitoring tool
 | X | Stop started processes |
 | - | Restart them when they crash |
 | X | Relay termination signals |
-| - | Read their stdout and stderr |
+| X | Read their stdout and stderr |
 | X | Compile and work on Linux and macOS |
 
 ### Optional features
